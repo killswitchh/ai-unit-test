@@ -1,0 +1,46 @@
+name: Run ai_unit_tests
+on:
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'     
+        required: true
+        default: 'warning'
+      tags:
+        description: 'Test scenario tags'  
+  push:
+    branches:
+      - "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Set up Python and install dependencies
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+      - run: pip install -r .github/requirements.txt
+      - name: Run add_unit_tests script
+        run: bash .github/run_unit_tests.sh .github/unit-test/add_unit_tests.py
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      - name: Check for changes
+        id: changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::set-output name=has_changes::true"
+          fi
+      - name: Commit and push changes
+        if: steps.changes.outputs.has_changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "[ACTIONS AI] Added Unit Tests"
+          git push origin HEAD:${{ github.ref }}
