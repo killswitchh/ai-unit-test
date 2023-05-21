@@ -35,6 +35,6 @@ def generate_ai_unit_tests(file_path):
 
 # Run the function if this script is called directly
 if __name__ == "__main__":
-    # filePath = sys.argv[1]
-    filePath = "addition.py"
+    filePath = sys.argv[1]
+    # filePath = "addition.py"
     generate_ai_unit_tests(filePath)
